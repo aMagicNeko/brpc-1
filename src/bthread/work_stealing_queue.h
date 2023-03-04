@@ -124,6 +124,9 @@ public:
         do {
             butil::atomic_thread_fence(butil::memory_order_seq_cst);
             b = _bottom.load(butil::memory_order_acquire);
+            // If not set t again and the pop() or another steal() happens
+            // during the circle, it might stuck in an endless loop
+            t = _top.load(butil::memory_order_acquire);
             if (t >= b) {
                 return false;
             }
